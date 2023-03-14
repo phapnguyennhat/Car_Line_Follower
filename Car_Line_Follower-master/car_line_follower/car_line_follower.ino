@@ -1,6 +1,6 @@
 #include <PID_v1.h>   //khai báo thư viện PID
 
-// Khai báo chân cảm biến hồng ngoại
+// Khai báo chân cảm biến hồng ngoại 123
 int sensor1 = A0;      // Bên trái
 int sensor2 = A1;
 int sensor3 = A2;
