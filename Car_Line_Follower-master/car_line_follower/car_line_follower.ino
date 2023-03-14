@@ -18,18 +18,18 @@ int IN3 = 7;
 int IN4 = 8;
                          
 //Thiết lập tốc độ nền
-double base_speed = 195; // 195-200-205-210-212.5-200-205.0-200-195
+double base_speed = 185; // 195-200-205-210-212.5-200-205.0-200-195
 double motor_speed = base_speed ;
 
 //Thiết lập tốc độ rẽ, lùi
-int banh_chinh = 140;//-135-100-110.0-90-100
+int banh_chinh = 170;//-135-100-110.0-90-100
 int banh_phu = 100; //Đảo ngược-75-95-100.0-75-80-100
 int toc_do_lui = 135;
 
 //Thiết lập hệ số PID
-double Kp = 0.108;
+double Kp = 0.06;
 double Ki = 0;
-double Kd = 0.78;
+double Kd = 0.0009;
 
 //Khai báo các biến nhớ cần dùng
 int memory = 0;
@@ -39,11 +39,8 @@ int count = 0;
 unsigned long time_count_1;
 unsigned long time_now_1 = 0;
 
-unsigned long time_count_2;
-unsigned long time_now_2 = 0;
-
 //Khai báo PID
-  double max_PID_value = 265 - motor_speed;
+  double max_PID_value = 255 - motor_speed;
   double error = 0, PID_value = 0, Setpoint = 2500;
   PID myPID(&error, &PID_value, &Setpoint, Kp, Ki, Kd, DIRECT); //P_ON_M specifies that Proportional on Measurement be used
                                                                 //P_ON_E (Proportional on Error) is the default behavior
@@ -73,8 +70,9 @@ void setup()
 void loop()
 {
   read_sensor();
+  // Serial.print(PID_value);
   Serial.println(error);
-// Need to change the 
+
   // if ((error >=2 )&&(error <= 3)) memory = error; //tạo memory
   
   if (error == 15) 
@@ -90,39 +88,36 @@ void loop()
     while (error == 15);
   }
   
-  else if (error == 20) {
-      count=1;
-  }
+  // if (error == 20) {
+  //     if (count == 0) count =1;
+  //     else count = 0;
+  // }
   else if (error == 10) {
-      count=0;
+      // count=0;
+      // delay(1);
+      // read_sensor();
+      // if (error == 20) break;
     do {
       RePhai();
       read_sensor();
     }
-    while (error =! 2500); // or 2.5
+    while (error =! 2500); // or 2.5p;..;;;;;;.
   }
-    else if (error == - 5) {
-      count=0;
-      do {
-      ReTrai();
-      read_sensor();
+  else if (error == - 5) {
+
+    // count=0;
+    do {
+    ReTrai();
+    read_sensor();
     }
     while (error != 2500);
-    }
-  
-      
+    } 
   else 
   {
-    if (count == 1) {
-    motor_speed =150;
-    myPID.Compute();    // Sau khi loại bỏ hết các error đặc biệt mới bỏ vào bộ tính toán PID
-    motor_control(); 
-    }
-    else  {
-    motor_speed = 195; 
-    myPID.Compute();    // Sau khi loại bỏ hết các error đặc biệt mới bỏ vào bộ tính toán PID
+    if (error >= 2000 and error <= 3000) base_speed =195;
+    else base_speed = 175; 
+    myPID.Compute();   
     motor_control();               
-  }
 }
 }
 
@@ -197,9 +192,9 @@ void DiLui()
 
 void RePhai() {
   /*Banh phải nhanh hơn bánh trái */
-  digitalWrite(IN1, LOW); // ban dau la LOW
-  digitalWrite(IN2, HIGH); // ban dau la HIGH
-  analogWrite(ENA, banh_phu);
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  analogWrite(ENA, 0); // stop
   digitalWrite(IN3, HIGH);
   digitalWrite(IN4, LOW);
   analogWrite(ENB, banh_chinh);
@@ -209,8 +204,8 @@ void ReTrai() {
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
   analogWrite(ENA, banh_chinh);
-  digitalWrite(IN3, LOW); // ban dau la LOW
-  digitalWrite(IN4, HIGH); // ban dau la HIGH
-  analogWrite(ENB, banh_phu);
+  digitalWrite(IN3, LOW); 
+  digitalWrite(IN4, HIGH); 
+  analogWrite(ENB, 0);
 }
 
