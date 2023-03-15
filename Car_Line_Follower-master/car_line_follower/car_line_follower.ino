@@ -18,18 +18,18 @@ int IN3 = 7;
 int IN4 = 8;
                          
 //Thiết lập tốc độ nền
-double base_speed = 185; // 195-200-205-210-212.5-200-205.0-200-195
+double base_speed = 205; // 195-200-205-210-212.5-200-205.0-200-195
 double motor_speed = base_speed ;
 
 //Thiết lập tốc độ rẽ, lùi
-int banh_chinh = 170;//-135-100-110.0-90-100
+int banh_chinh = 190;//-135-100-110.0-90-100
 int banh_phu = 100; //Đảo ngược-75-95-100.0-75-80-100
 int toc_do_lui = 135;
 
 //Thiết lập hệ số PID
-double Kp = 0.06;
+double Kp = 0.02;
 double Ki = 0;
-double Kd = 0.0009;
+double Kd = 0.2;
 
 //Khai báo các biến nhớ cần dùng
 int memory = 0;
@@ -70,11 +70,9 @@ void setup()
 void loop()
 {
   read_sensor();
-  // Serial.print(PID_value);
   Serial.println(error);
 
-  // if ((error >=2 )&&(error <= 3)) memory = error; //tạo memory
-  
+  if ((error >=2000 )&&(error <= 3000)) memory = error; //tạo memory
   if (error == 15) 
   {
     do 
@@ -82,31 +80,33 @@ void loop()
       DiLui();
       time_count_1 = millis ();
       if (time_count_1 - time_now_1 > 20) {
+      time_now_1 = millis(); // Moi them vao
       read_sensor();
-      } // Di lui trong hay ngoai ngoac ?
+      } 
     } 
     while (error == 15);
   }
-  
-  // if (error == 20) {
-  //     if (count == 0) count =1;
-  //     else count = 0;
-  // }
   else if (error == 10) {
-      // count=0;
-      // delay(1);
-      // read_sensor();
-      // if (error == 20) break;
+      delay(1);
+      read_sensor();
+      if (error == 20) count = 1;
     do {
+      if (count == 1) {
+        count = 0;
+        break;}
       RePhai();
       read_sensor();
     }
-    while (error =! 2500); // or 2.5p;..;;;;;;.
+    while (error =! 2500); // 
   }
   else if (error == - 5) {
-
-    // count=0;
+      delay(1);
+      read_sensor();
+      if (error == 20) count = 1;
     do {
+      if (count == 1) {
+        count = 0;
+        break;}
     ReTrai();
     read_sensor();
     }
@@ -114,8 +114,8 @@ void loop()
     } 
   else 
   {
-    if (error >= 2000 and error <= 3000) base_speed =195;
-    else base_speed = 175; 
+    if (error >= 2000 and error <= 3000) {base_speed =205; Kp = 0.02;}
+    else {base_speed = 175; Kp = 0.06;}
     myPID.Compute();   
     motor_control();               
 }
@@ -129,28 +129,28 @@ void read_sensor()
   sensor[2] = digitalRead(sensor3);
   sensor[3] = digitalRead(sensor4);
  // Đã sửa theo setpoint là 2.5, cần sửa chữa quẹo trái, quẹo phải, nữa là ổn
-  if((sensor[0]==0)&&(sensor[1]==0)&&(sensor[2]==0)&&(sensor[3]==1))
+  if((sensor[0]==1)&&(sensor[1]==1)&&(sensor[2]==1)&&(sensor[3]==0))
   error=5000;
-  else if((sensor[0]==0)&&(sensor[1]==0)&&(sensor[2]==1)&&(sensor[3]==1))
+  else if((sensor[1]==0)&&(sensor[1]==1)&&(sensor[2]==0)&&(sensor[3]==0))
   error=4000;
-  else if((sensor[0]==0)&&(sensor[1]==0)&&(sensor[2]==1)&&(sensor[3]==0))
+  else if((sensor[0]==1)&&(sensor[1]==1)&&(sensor[2]==0)&&(sensor[3]==1))
   error=3000;
-  else if((sensor[0]==0)&&(sensor[1]==1)&&(sensor[2]==1)&&(sensor[3]==0))
+  else if((sensor[0]==1)&&(sensor[1]==0)&&(sensor[2]==0)&&(sensor[3]==1))
   error=2500;
-  else if((sensor[0]==0)&&(sensor[1]==1)&&(sensor[2]==0)&&(sensor[3]==0))
+  else if((sensor[0]==1)&&(sensor[1]==0)&&(sensor[2]==1)&&(sensor[3]==1))
   error=2000;
-  else if((sensor[0]==1)&&(sensor[1]==1)&&(sensor[2]==0)&&(sensor[3]==0))
+  else if((sensor[0]==0)&&(sensor[1]==0)&&(sensor[2]==1)&&(sensor[3]==1))
   error=1000;
-  else if((sensor[0]==1)&&(sensor[1]==0)&&(sensor[2]==0)&&(sensor[3]==0))
+  else if((sensor[0]==0)&&(sensor[1]==1)&&(sensor[2]==1)&&(sensor[3]==1))
   error=0;
   //Cần sửa ở dưới
-  else if ((sensor[0] == 1) && (sensor[1] == 1) && (sensor[2] == 1) && (sensor[3] == 1))// Giam toc
+  else if ((sensor[0] == 0) && (sensor[1] == 0) && (sensor[2] == 0) && (sensor[3] == 0))// Giam toc
   error = 20;
-  else if ((sensor[0] == 0) && (sensor[1] == 1) && (sensor[2] == 1) && (sensor[3] == 1)) // Rẽ Phải
+  else if ((sensor[0] == 1) && (sensor[1] == 0) && (sensor[2] == 0) && (sensor[3] ==0)) // Rẽ Phải
   error = 10;
-  else if ((sensor[0] == 1) && (sensor[1] == 1) && (sensor[2] == 1) && (sensor[3] == 0)) // Rẽ Trái
+  else if ((sensor[0] == 0) && (sensor[1] == 0) && (sensor[2] == 0) && (sensor[3] == 1)) // Rẽ Trái
   error = -5;
-  else if ((sensor[0] == 0) && (sensor[1] == 0) && (sensor[2] == 0) && (sensor[3] == 0)) // Out line
+  else if ((sensor[0] == 1) && (sensor[1] == 1) && (sensor[2] == 1) && (sensor[3] == 0)) // Out line
   error = 15;
   else {}
     // error = memory;    
