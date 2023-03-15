@@ -1,6 +1,6 @@
 #include <PID_v1.h>   //khai báo thư viện PID
 
-// Khai báo chân cảm biến hồng ngoại
+// Khai báo chân cảm biến hồng ngoại 123
 int sensor1 = A0;      // Bên trái
 int sensor2 = A1;
 int sensor3 = A2;
@@ -17,6 +17,7 @@ int ENB = 6;  //DC phải: 6,7,8
 int IN3 = 7;
 int IN4 = 8;
                          
+<<<<<<< HEAD
 //Thiết lập tốc độ nền    toi uu thoi gian trong khoang 200
 double base_speed = 200; // 195-200-205-210-212.5-200-205.0-200-195
 double motor_speed = base_speed ;
@@ -24,14 +25,27 @@ double motor_speed = base_speed ;
 // Thiết lập tốc độ rẽ, lùi      khuc nay neu ch dc thi se GIAM TOC DO va TANG DO LECH 2 BANH
 int banh_chinh = 140;//-135-100-110.0-90-100
 int banh_phu = 50; //Đảo ngược-75-95-100.0-75-80-100
+=======
+//Thiết lập tốc độ nền
+double base_speed = 185; // 195-200-205-210-212.5-200-205.0-200-195
+double motor_speed = base_speed ;
+
+//Thiết lập tốc độ rẽ, lùi
+int banh_chinh = 170;//-135-100-110.0-90-100
+int banh_phu = 100; //Đảo ngược-75-95-100.0-75-80-100
+>>>>>>> main
 int toc_do_lui = 135;
 // co nen tang toc do luu de toi uu thoi gian do line sau khi lech??
 //Thiết lập hệ số PID
+<<<<<<< HEAD
 // pid_value=Kp*error+Kd*error'(t)
 // voi base_speed=200 thi pid_value thuoc [-55,55]
 double Kp = 0.108;
+=======
+double Kp = 0.06;
+>>>>>>> main
 double Ki = 0;
-double Kd = 0.78;
+double Kd = 0.0009;
 
 //Khai báo các biến nhớ cần dùng
 int memory = 0;
@@ -41,11 +55,8 @@ int count = 0;
 unsigned long time_count_1;
 unsigned long time_now_1 = 0;
 
-unsigned long time_count_2;
-unsigned long time_now_2 = 0;
-
 //Khai báo PID
-  double max_PID_value = 265 - motor_speed;
+  double max_PID_value = 255 - motor_speed;
   double error = 0, PID_value = 0, Setpoint = 2500;
   PID myPID(&error, &PID_value, &Setpoint, Kp, Ki, Kd, DIRECT); //P_ON_M specifies that Proportional on Measurement be used
                                                                 //P_ON_E (Proportional on Error) is the default behavior
@@ -75,8 +86,9 @@ void setup()
 void loop()
 {
   read_sensor();
+  // Serial.print(PID_value);
   Serial.println(error);
-// Need to change the 
+
   // if ((error >=2 )&&(error <= 3)) memory = error; //tạo memory
   
   if (error == 15) 
@@ -92,40 +104,41 @@ void loop()
     while (error == 15);
   }
   
-  else if (error == 20) {
-      count=1;
-  }
+  // if (error == 20) {
+  //     if (count == 0) count =1;
+  //     else count = 0;
+  // }
   else if (error == 10) {
-      count=0;
+      // count=0;
+      // delay(1);
+      // read_sensor();
+      // if (error == 20) break;
     do {
       RePhai();
       read_sensor();
     }
-    while (error =! 2500); // or 2.5
+    while (error =! 2500); // or 2.5p;..;;;;;;.
   }
-    else if (error == - 5) {
-      count=0;
-      do {
-      ReTrai();
-      read_sensor();
+  else if (error == - 5) {
+
+    // count=0;
+    do {
+    ReTrai();
+    read_sensor();
     }
     while (error != 2500);
-    }
-  
-      
+    } 
   else 
   {
-    if (count == 1) {
-    motor_speed =150;
-    myPID.Compute();    // Sau khi loại bỏ hết các error đặc biệt mới bỏ vào bộ tính toán PID
-    motor_control(); 
-    }
-    else  {
-    motor_speed = 195; 
-    myPID.Compute();    // Sau khi loại bỏ hết các error đặc biệt mới bỏ vào bộ tính toán PID
+    if (error >= 2000 and error <= 3000) base_speed =195;
+    else base_speed = 175; 
+    myPID.Compute();   
     motor_control();               
+<<<<<<< HEAD
     }
   }
+=======
+>>>>>>> main
 }
 
 
@@ -199,9 +212,9 @@ void DiLui()
 
 void RePhai() {
   /*Banh phải nhanh hơn bánh trái */
-  digitalWrite(IN1, LOW); // ban dau la LOW
-  digitalWrite(IN2, HIGH); // ban dau la HIGH
-  analogWrite(ENA, banh_phu);
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  analogWrite(ENA, 0); // stop
   digitalWrite(IN3, HIGH);
   digitalWrite(IN4, LOW);
   analogWrite(ENB, banh_chinh);
@@ -211,8 +224,8 @@ void ReTrai() {
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
   analogWrite(ENA, banh_chinh);
-  digitalWrite(IN3, LOW); // ban dau la LOW
-  digitalWrite(IN4, HIGH); // ban dau la HIGH
-  analogWrite(ENB, banh_phu);
+  digitalWrite(IN3, LOW); 
+  digitalWrite(IN4, HIGH); 
+  analogWrite(ENB, 0);
 }
 
