@@ -68,7 +68,7 @@ void setup()
   
   myPID.SetOutputLimits(-max_PID_value, max_PID_value); // gia tri output nam trong khoang (-55, 55)
   myPID.SetMode(AUTOMATIC);
-  myPID.SetSampleTime(13); //40-30-20-10-12-12.5-13.5-12.5-14-13-12.5-14-16-13.5-12-13
+  myPID.SetSampleTime(5); //40-30-20-10-12-12.5-13.5-12.5-14-13-12.5-14-16-13.5-12-13
   //nếu đi qua line chắn mà đọc nhầm thành rẽ thì sẽ TĂNG SAMPLE TIME hoặc TĂNG TỐC ĐỌ
 }
 
