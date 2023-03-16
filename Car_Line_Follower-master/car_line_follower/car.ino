@@ -1,5 +1,6 @@
 /*By Mai Huy - Training LT 6 - DEE YOUTH UNION */
-
+// khi đi qua line chắn mục tiêu cho nó chạy nhanh qua line chắn thật nhanh để thoát khỏi vòng while mà cũng đảm bảo nó đọc qua th tất cả đèn đều sáng motor_speed=30 
+// qua đó xe sẽ giảm tốc gặp góc vuông vào vòng while xe rẽ và chạy theo hàm RẼ khi thoát khỏi vòng while motor_speed=base_speed=200
 #include <PID_v1.h>   //khai báo thư viện PID
 
 // Khai báo chân cảm biến hồng ngoại
@@ -73,6 +74,7 @@ void setup()
 
 void loop()
 {
+  
   read_sensor();
   Serial.println(error);
   if ((error >= -1)&&(error <= 1)) memory = error; //tạo memory
@@ -88,15 +90,26 @@ void loop()
     } 
     while (error == 31);
   }
-  
-  else if (error == -30)                 // Rẽ Trái 90*    
+
+  else if(error==20){       //xe chỉ rẽ khi đi qua line chắn 
+    do
+    {
+     motor_speed=30;    //đi qua line chắn vừa vào vòng while là thoát luôn (đã đọc đc linechắn) sau đó giảm tốc
+     read_sensor();
+     myPID.Compute();    // Sau khi loại bỏ hết các error đặc biệt mới bỏ vào bộ tính toán PID
+    motor_control();
+     }
+     while(error!=-30||error!=30);
+   if (error == -30)                 // Rẽ Trái 90*    
   {
     do                             // Quay sang trái cho tới khi phát hiện ngay giữa line - error == 0
     {
       ReTrai();
       read_sensor();
+      
     }
     while (error != 0);
+    motor_speed=base_speed;
   }
   
   else if (error == 30)          // Rẽ Phải 90* 
@@ -105,15 +118,18 @@ void loop()
     {   
       RePhai();
       read_sensor();
+      
     }
-    while (error != 0);        
-  } 
+    while (error != 0);    
+    motor_speed=base_speed;    
+  }
+  }
       
   else 
   {
     myPID.Compute();    // Sau khi loại bỏ hết các error đặc biệt mới bỏ vào bộ tính toán PID
     motor_control();
-    Serial.println(PID_value);    //xem gia tri pid_value                
+    // Serial.println(PID_value);    //xem gia tri pid_value                
   }
 }
 
@@ -125,25 +141,27 @@ void read_sensor()
   sensor[2] = digitalRead(sensor3);
   sensor[3] = digitalRead(sensor4);
  //thang -2.5 0  2.5
-  if((sensor[0]==0)&&(sensor[1]==0)&&(sensor[2]==0)&&(sensor[3]==1))
+  if((sensor[0]==1)&&(sensor[1]==1)&&(sensor[2]==1)&&(sensor[3]==0))
   error=2.5;
-  else if((sensor[0]==0)&&(sensor[1]==0)&&(sensor[2]==1)&&(sensor[3]==1))
-  error=1.5;
-  else if((sensor[0]==0)&&(sensor[1]==0)&&(sensor[2]==1)&&(sensor[3]==0))
-  error=0.5;
-  else if((sensor[0]==0)&&(sensor[1]==1)&&(sensor[2]==1)&&(sensor[3]==0))
-  error=0;
-  else if((sensor[0]==0)&&(sensor[1]==1)&&(sensor[2]==0)&&(sensor[3]==0))
-  error=-0.5;
   else if((sensor[0]==1)&&(sensor[1]==1)&&(sensor[2]==0)&&(sensor[3]==0))
+  error=1.5;
+  else if((sensor[0]==1)&&(sensor[1]==1)&&(sensor[2]==0)&&(sensor[3]==1))
+  error=0.5;
+  else if((sensor[0]==1)&&(sensor[1]==0)&&(sensor[2]==0)&&(sensor[3]==1))
+  error=0;
+  else if((sensor[0]==1)&&(sensor[1]==0)&&(sensor[2]==1)&&(sensor[3]==1))
+  error=-0.5;
+  else if((sensor[0]==0)&&(sensor[1]==0)&&(sensor[2]==1)&&(sensor[3]==1))
   error=-1;
-  else if((sensor[0]==1)&&(sensor[1]==0)&&(sensor[2]==0)&&(sensor[3]==0))
+  else if((sensor[0]==0)&&(sensor[1]==1)&&(sensor[2]==1)&&(sensor[3]==1))
   error=-2.5;
-  else if ((sensor[0] == 0) && (sensor[1] == 1) && (sensor[2] == 1) && (sensor[3] == 1)) // Rẽ Phải
+  else if ((sensor[0] == 0) && (sensor[1] == 0) && (sensor[2] == 0) && (sensor[3] == 0))  // line chan
+  error=20;
+  else if ((sensor[0] == 1) && (sensor[1] == 0) && (sensor[2] == 0) && (sensor[3] == 0)) // Rẽ Phải
   error = 30;
-  else if ((sensor[0] == 1) && (sensor[1] == 1) && (sensor[2] == 1) && (sensor[3] == 0)) // Rẽ Trái
+  else if ((sensor[0] == 0) && (sensor[1] == 0) && (sensor[2] == 0) && (sensor[3] == 1)) // Rẽ Trái
   error = -30;
-  else if ((sensor[0] == 0) && (sensor[1] == 0) && (sensor[2] == 0) && (sensor[3] == 0)) // Out line
+  else if ((sensor[0] == 1) && (sensor[1] == 1) && (sensor[2] == 1) && (sensor[3] == 1)) // Out line
   error = 31;
   else 
     error = memory;    //Memory
