@@ -2,7 +2,9 @@
 // khi đi qua line chắn mục tiêu cho nó chạy nhanh qua line chắn thật nhanh để thoát khỏi vòng while mà cũng đảm bảo nó đọc qua th tất cả đèn đều sáng motor_speed=30 
 // qua đó xe sẽ giảm tốc gặp góc vuông vào vòng while xe rẽ và chạy theo hàm RẼ khi thoát khỏi vòng while motor_speed=base_speed=200
 #include <PID_v1.h>   //khai báo thư viện PID
-
+//den 1 trang 0
+int background = 0;
+int line = 1;
 // Khai báo chân cảm biến hồng ngoại
 int sensor1 = A0;      // Bên trái
 int sensor2 = A1;
@@ -19,14 +21,14 @@ int ENA = 5;
 int ENB = 6;  //DC phải: 6,7,8
 int IN3 = 7;
 int IN4 = 8;
-                         
+  
 //Thiết lập tốc độ nền    toi uu thoi gian trong khoang 200
 double base_speed = 200; // 195-200-205-210-212.5-200-205.0-200-195
 double motor_speed = base_speed ;
 
 //Thiết lập tốc độ rẽ, lùi    khuc nay neu ch dc thi se GIAM TOC DO va TANG DO LECH 2 BANH
-int banh_chinh = 140;//-135-100-110.0-90-100
-int banh_phu = 50; //Đảo ngược-75-95-100.0-75-80-100
+int banh_chinh = 110;//-135-100-110.0-90-100
+int banh_phu = 100; //Đảo ngược-75-95-100.0-75-80-100
 int toc_do_lui = 110;
 // co nen tang toc do luu de toi uu thoi gian do line sau khi lech??
 
@@ -76,7 +78,7 @@ void loop()
 {
   
   read_sensor();
-  Serial.println(error);
+  // Serial.println(error);
   if ((error >= -1)&&(error <= 1)) memory = error; //tạo memory
   
   if (error == 31)      //lech line
@@ -90,32 +92,32 @@ void loop()
     } 
     while (error == 31);
   }
-
-  else if(error==20){       //xe chỉ rẽ khi đi qua line chắn 
+   else if(error==20){       //xe chỉ rẽ khi đi qua line chắn 
     do
     {
-     motor_speed=100;    //đi qua line chắn vừa vào vòng while là thoát luôn (đã đọc đc linechắn) sau đó giảm tốc
-     read_sensor();
-     myPID.Compute();    // Sau khi loại bỏ hết các error đặc biệt mới bỏ vào bộ tính toán PID
-    motor_control();
+      Serial.println(error);
+      motor_speed = 100; // đi qua line chắn vừa vào vòng while là thoát luôn (đã đọc đc linechắn) sau đó giảm tốc
+      read_sensor();
+      myPID.Compute(); // Sau khi loại bỏ hết các error đặc biệt mới bỏ vào bộ tính toán PID
+      motor_control();
      }
      while(error!=-30||error!=30);
    if (error == -30)                 // Rẽ Trái 90*    
   {
-    do                             // Quay sang trái cho tới khi phát hiện ngay giữa line - error == 0
+    do              // Quay sang trái cho tới khi phát hiện ngay giữa line - error == 0
     {
+      Serial.println(error);
       ReTrai();
       read_sensor();
-
     }
     while (error != 0);
     motor_speed=base_speed;
   }
-  
   else if (error == 30)          // Rẽ Phải 90* 
   {    
     do                           // Quay sang phải cho tới khi phát hiện ngay giữa line
     {   
+      Serial.println(error);
       RePhai();
       read_sensor();
       
@@ -124,7 +126,6 @@ void loop()
     motor_speed=base_speed;    
   }
   }
-      
   else 
   {
     myPID.Compute();    // Sau khi loại bỏ hết các error đặc biệt mới bỏ vào bộ tính toán PID
@@ -140,33 +141,32 @@ void read_sensor()
   sensor[1] = digitalRead(sensor2);
   sensor[2] = digitalRead(sensor3);
   sensor[3] = digitalRead(sensor4);
- //thang -2.5 0  2.5
-  if((sensor[0]==1)&&(sensor[1]==1)&&(sensor[2]==1)&&(sensor[3]==0))
-  error=2.5;
-  else if((sensor[0]==1)&&(sensor[1]==1)&&(sensor[2]==0)&&(sensor[3]==0))
-  error=1.5;
-  else if((sensor[0]==1)&&(sensor[1]==1)&&(sensor[2]==0)&&(sensor[3]==1))
-  error=0.5;
-  else if((sensor[0]==1)&&(sensor[1]==0)&&(sensor[2]==0)&&(sensor[3]==1))
+  if((sensor[0]==background)&&(sensor[1]==background)&&(sensor[2]==background)&&(sensor[3]==line))
+  error=3.5;
+  else if((sensor[1]==background)&&(sensor[1]==background)&&(sensor[2]==line)&&(sensor[3]==line))
+  error=2;
+  else if((sensor[0]==background)&&(sensor[1]==background)&&(sensor[2]==line)&&(sensor[3]==background))
+  error=1;
+  else if((sensor[0]==background)&&(sensor[1]==line)&&(sensor[2]==line)&&(sensor[3]==background))
   error=0;
-  else if((sensor[0]==1)&&(sensor[1]==0)&&(sensor[2]==1)&&(sensor[3]==1))
-  error=-0.5;
-  else if((sensor[0]==0)&&(sensor[1]==0)&&(sensor[2]==1)&&(sensor[3]==1))
+  else if((sensor[0]==background)&&(sensor[1]==line)&&(sensor[2]==background)&&(sensor[3]==background))
   error=-1;
-  else if((sensor[0]==0)&&(sensor[1]==1)&&(sensor[2]==1)&&(sensor[3]==1))
-  error=-2.5;
-  else if ((sensor[0] == 0) && (sensor[1] == 0) && (sensor[2] == 0) && (sensor[3] == 0))  // line chan
-  error=20;
-  else if ((sensor[0] == 1) && (sensor[1] == 0) && (sensor[2] == 0) && (sensor[3] == 0)) // Rẽ Phải
+  else if((sensor[0]==line)&&(sensor[1]==line)&&(sensor[2]==background)&&(sensor[3]==background))
+  error=-2;
+  else if((sensor[0]==line)&&(sensor[1]==background)&&(sensor[2]==background)&&(sensor[3]==background))
+  error=-3.5;
+  //Cần sửa ở dưới
+  else if ((sensor[0] == line) && (sensor[1] == line) && (sensor[2] == line) && (sensor[3] == line))// Giam toc
+  error = 20;
+  else if ((sensor[0] == background) && (sensor[1] == line) && (sensor[2] == line) && (sensor[3] ==line)) // Rẽ Phải
   error = 30;
-  else if ((sensor[0] == 0) && (sensor[1] == 0) && (sensor[2] == 0) && (sensor[3] == 1)) // Rẽ Trái
+  else if ((sensor[0] == line) && (sensor[1] == line) && (sensor[2] == line) && (sensor[3] == background)) // Rẽ Trái
   error = -30;
-  else if ((sensor[0] == 1) && (sensor[1] == 1) && (sensor[2] == 1) && (sensor[3] == 1)) // Out line
+  else if ((sensor[0] == background) && (sensor[1] == background) && (sensor[2] == background) && (sensor[3] == background)) // Out line
   error = 31;
   else 
-    error = memory;    //Memory
+  error = memory;    //Memory
 }
-
 void motor_control()
 { 
   int left_motor_speed = motor_speed  + PID_value;  //Nếu chạy ngược thì đổi + thành - 
@@ -219,4 +219,3 @@ void ReTrai() {
   digitalWrite(IN4, HIGH);
   analogWrite(ENB, banh_phu);
 }
-
