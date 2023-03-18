@@ -24,12 +24,12 @@ double motor_speed = base_speed ;
 int left_motor_speed;
 int right_motor_speed;
 //Thiết lập tốc độ rẽ, lùi
-int banh_chinh = 170;//-135-100-110.0-90-100
-int banh_phu = 130; //Đảo ngược-75-95-100.0-75-80-100
+int banh_chinh = 135;//-135-100-110.0-90-100
+int banh_phu = 110; //Đảo ngược-75-95-100.0-75-80-100
 int toc_do_lui = 135;
 
 //Thiết lập hệ số PID
-double Kp = 0.06;
+double Kp = 0.044;
 double Ki = 0;
 double Kd = 0;
 
@@ -37,8 +37,8 @@ double Kd = 0;
 int memory = 0;
 int count = 0;
 int slow = 0;
-int background = 1;
-int line = 0;
+int background = 0;
+int line = 1;
 //Khai bao de dung millis
 unsigned long time_count_1;
 unsigned long time_now_1 = 0;
@@ -75,7 +75,7 @@ void loop()
 {
   
   read_sensor();
-  // Serial.println(error);
+ // Serial.println(error);
 
   if ((error >=2000) && (error <= 3000)) memory = error; //tạo memory
   if (error == 15) 
@@ -94,44 +94,44 @@ void loop()
   else if(error==2499){       //xe chỉ rẽ khi đi qua line chắn  
   // đã có error băng 2499 nên tính pid luôn
       myPID.Compute(); // Sau khi loại bỏ hết các error đặc biệt mới bỏ vào bộ tính toán PID
-      motor_control();      
-        delay(200);
-        motor_speed = 130; // đi qua line chắn vừa vào vòng while là thoát luôn (đã đọc đc linechắn) sau đó giảm tốc
+      motor_control();
+        delay(100);
+        motor_speed = 100; // đi qua line chắn vừa vào vòng while là thoát luôn (đã đọc đc linechắn) sau đó giảm tốc
     do
     {
-      Serial.println(error);
+      Serial.println("111111111111111111111111111");
+     // Serial.println(error);
       read_sensor();
-      if(error!=10||error!=-10)   break;   
+      if(error!=6000||error!=-1000)   break;   
       myPID.Compute(); // Sau khi loại bỏ hết các error đặc biệt mới bỏ vào bộ tính toán PID
       motor_control();
      }
      while(1);
   }
-   if (error == -10)                 // Rẽ Trái 90*    
+   if (error == -1000)                 // Rẽ Trái 90*    
   {
     do              // Quay sang trái cho tới khi phát hiện ngay giữa line - error == 0
     {
-     
+      Serial.println("traiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"); 
       ReTrai();
       read_sensor();
-       Serial.println(-1);
     }
     while (error != 2500);
     motor_speed=base_speed;
+    Serial.println("thoattttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt");   
   }
-  else if (error == 10)          // Rẽ Phải 90* 
+  else if (error == 6000)          // Rẽ Phải 90* 
   {    
     do                           // Quay sang phải cho tới khi phát hiện ngay giữa line
     {   
-      
-      RePhai();
+      Serial.println("phaiiiiiiiiiiiiiiiiiiiiiii"); 
+           RePhai(); 
       read_sensor();
-      Serial.println(1);
-      
     }
-    while (error != 2500);    
-    motor_speed=base_speed;    
-  }
+    while (error != 2500);   
+    motor_speed=base_speed; 
+    Serial.println("thoattttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt");   
+  } 
   else 
   {
     myPID.Compute();    // Sau khi loại bỏ hết các error đặc biệt mới bỏ vào bộ tính toán PID
@@ -166,9 +166,9 @@ void read_sensor()
   else if ((sensor[0] == line) && (sensor[1] == line) && (sensor[2] == line) && (sensor[3] == line))// Giam toc
   error = 2499;
   else if ((sensor[0] == background) && (sensor[1] == line) && (sensor[2] == line) && (sensor[3] ==line)) // Rẽ Phải
-  error = 10;
+  error = 6000;
   else if ((sensor[0] == line) && (sensor[1] == line) && (sensor[2] == line) && (sensor[3] == background)) // Rẽ Trái
-  error = -10;
+  error = -1000;
   else if ((sensor[0] == background) && (sensor[1] == background) && (sensor[2] == background) && (sensor[3] == background)) // Out line
   error = 15;
   else {
@@ -214,18 +214,18 @@ void RePhai() {
   /*Banh phải nhanh hơn bánh trái */
   digitalWrite(IN1, LOW);
   digitalWrite(IN2, HIGH);
-  analogWrite(ENA, banh_phu); // stop
+  analogWrite(ENA, 110); // stop
   digitalWrite(IN3, HIGH);
   digitalWrite(IN4, LOW);
-  analogWrite(ENB, banh_chinh);
+  analogWrite(ENB, 123);
 }
 void ReTrai() {
   /*Banh trái nhanh hơn bánh phải */
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
-  analogWrite(ENA, banh_chinh);
+  analogWrite(ENA, 135);
   digitalWrite(IN3, LOW); 
   digitalWrite(IN4, HIGH); 
-  analogWrite(ENB, banh_phu);
+  analogWrite(ENB, 101);
 }
 
