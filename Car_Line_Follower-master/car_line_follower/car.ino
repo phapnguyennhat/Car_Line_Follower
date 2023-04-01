@@ -19,7 +19,7 @@ int IN4 = 8;
                          
 //Thiết lập tốc độ nền
 double base_speed = 185; // 195-200-205-210-212.5-200-205.0-200-195
-double motor_speed = base_speed ;
+double motor_speed = base_speed;
 
 int left_motor_speed;
 int right_motor_speed;
@@ -29,9 +29,9 @@ int banh_phu = 110; //Đảo ngược-75-95-100.0-75-80-100
 int toc_do_lui = 135;
 
 //Thiết lập hệ số PID
-double Kp = 14;
+double Kp = 10;
 double Ki = 0;
-double Kd = 4;
+double Kd = 5;
 
 //Khai báo các biến nhớ cần dùng
 int memory = 0;
@@ -77,7 +77,7 @@ void loop()
   read_sensor();
  // Serial.println(error);
 
-  if ((error >=2000) && (error <= 3000)) memory = error; //tạo memory
+  if ((error >=-1) && (error <= 1)) memory = error; //tạo memory
   if (error == 31) 
   {
     do 
@@ -96,7 +96,7 @@ void loop()
       myPID.Compute(); // Sau khi loại bỏ hết các error đặc biệt mới bỏ vào bộ tính toán PID
       motor_control();
         delay(200);
-        motor_speed = 130; // đi qua line chắn vừa vào vòng while là thoát luôn (đã đọc đc linechắn) sau đó giảm tốc
+        motor_speed = 100; // đi qua line chắn vừa vào vòng while là thoát luôn (đã đọc đc linechắn) sau đó giảm tốc
     do
     {
       Serial.println("111111111111111111111111111");
@@ -152,9 +152,9 @@ void read_sensor()
   sensor[3] = digitalRead(sensor4);
  // Đã sửa theo setpoint là 2.5, cần sửa chữa quẹo trái, quẹo phải, nữa là ổn
   if((sensor[0]==background)&&(sensor[1]==background)&&(sensor[2]==background)&&(sensor[3]==line))
-  error=3.5;
+  error=6;
   else if((sensor[1]==background)&&(sensor[1]==background)&&(sensor[2]==line)&&(sensor[3]==line))
-  error=2;
+  error=2.5;
   else if((sensor[0]==background)&&(sensor[1]==background)&&(sensor[2]==line)&&(sensor[3]==background))
   error=1;
   else if((sensor[0]==background)&&(sensor[1]==line)&&(sensor[2]==line)&&(sensor[3]==background))
@@ -162,9 +162,9 @@ void read_sensor()
   else if((sensor[0]==background)&&(sensor[1]==line)&&(sensor[2]==background)&&(sensor[3]==background))
   error=-1;
   else if((sensor[0]==line)&&(sensor[1]==line)&&(sensor[2]==background)&&(sensor[3]==background))
-  error=-2;
+  error=-2.5;
   else if((sensor[0]==line)&&(sensor[1]==background)&&(sensor[2]==background)&&(sensor[3]==background))
-  error=-3.5;
+  error=-6;
   //Cần sửa ở dưới
   else if ((sensor[0] == line) && (sensor[1] == line) && (sensor[2] == line) && (sensor[3] == line))// Giam toc
   error = 0.01;
