@@ -18,7 +18,7 @@ int IN3 = 7;
 int IN4 = 8;
                          
 //Thiết lập tốc độ nền
-double base_speed = 200; // 195-200-205-210-212.5-200-205.0-200-195
+double base_speed = 185; // 195-200-205-210-212.5-200-205.0-200-195
 double motor_speed = base_speed ;
 
 int left_motor_speed;
@@ -29,7 +29,7 @@ int banh_phu = 110; //Đảo ngược-75-95-100.0-75-80-100
 int toc_do_lui = 135;
 
 //Thiết lập hệ số PID
-double Kp = 0.02;
+double Kp = 0.044;
 double Ki = 0;
 double Kd = 0.01;
 
