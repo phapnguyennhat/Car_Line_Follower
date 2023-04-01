@@ -29,16 +29,16 @@ int banh_phu = 110; //Đảo ngược-75-95-100.0-75-80-100
 int toc_do_lui = 135;
 
 //Thiết lập hệ số PID
-double Kp = 0.044;
+double Kp = 0.02;
 double Ki = 0;
-double Kd = 0;
+double Kd = 0.01;
 
 //Khai báo các biến nhớ cần dùng
 int memory = 0;
 int count = 0;
 int slow = 0;
-int background = 0;
-int line = 1;
+int background = 1;
+int line = 0;
 //Khai bao de dung millis
 unsigned long time_count_1;
 unsigned long time_now_1 = 0;
@@ -95,19 +95,21 @@ void loop()
   // đã có error băng 2499 nên tính pid luôn
       myPID.Compute(); // Sau khi loại bỏ hết các error đặc biệt mới bỏ vào bộ tính toán PID
       motor_control();
-        delay(100);
+        delay(200);
         motor_speed = 100; // đi qua line chắn vừa vào vòng while là thoát luôn (đã đọc đc linechắn) sau đó giảm tốc
     do
     {
       Serial.println("111111111111111111111111111");
      // Serial.println(error);
       read_sensor();
-      if(error!=6000||error!=-1000)   break;   
+      if(error!=6000||error!=-1000)   break;  
+      else 
+      { 
       myPID.Compute(); // Sau khi loại bỏ hết các error đặc biệt mới bỏ vào bộ tính toán PID
       motor_control();
+      }
      }
      while(1);
-  }
    if (error == -1000)                 // Rẽ Trái 90*    
   {
     do              // Quay sang trái cho tới khi phát hiện ngay giữa line - error == 0
@@ -132,6 +134,7 @@ void loop()
     motor_speed=base_speed; 
     Serial.println("thoattttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt");   
   } 
+  }
   else 
   {
     myPID.Compute();    // Sau khi loại bỏ hết các error đặc biệt mới bỏ vào bộ tính toán PID
@@ -214,18 +217,18 @@ void RePhai() {
   /*Banh phải nhanh hơn bánh trái */
   digitalWrite(IN1, LOW);
   digitalWrite(IN2, HIGH);
-  analogWrite(ENA, 110); // stop
+  analogWrite(ENA, banh_phu); // stop
   digitalWrite(IN3, HIGH);
   digitalWrite(IN4, LOW);
-  analogWrite(ENB, 123);
+  analogWrite(ENB, banh_chinh);
 }
 void ReTrai() {
   /*Banh trái nhanh hơn bánh phải */
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
-  analogWrite(ENA, 135);
+  analogWrite(ENA, banh_chinh);
   digitalWrite(IN3, LOW); 
   digitalWrite(IN4, HIGH); 
-  analogWrite(ENB, 101);
+  analogWrite(ENB, banh_phu);
 }
 
