@@ -29,16 +29,16 @@ int banh_phu = 110; //Đảo ngược-75-95-100.0-75-80-100
 int toc_do_lui = 135;
 
 //Thiết lập hệ số PID
-double Kp = 10;
+double Kp = 15;
 double Ki = 0;
-double Kd = 5;
+double Kd = 0;
 
 //Khai báo các biến nhớ cần dùng
 int memory = 0;
 int count = 0;
 int slow = 0;
-int background = 1;
-int line = 0;
+int background = 0;
+int line = 1;
 //Khai bao de dung millis
 unsigned long time_count_1;
 unsigned long time_now_1 = 0;
@@ -73,7 +73,6 @@ void setup()
 
 void loop()
 {
-  
   read_sensor();
  // Serial.println(error);
 
@@ -91,59 +90,57 @@ void loop()
       }  
     while (error == 31);
   }
-  else if(error==0.01){       //xe chỉ rẽ khi đi qua line chắn  
-  // đã có error băng 2499 nên tính pid luôn
-      myPID.Compute(); // Sau khi loại bỏ hết các error đặc biệt mới bỏ vào bộ tính toán PID
-      motor_control();
-        delay(200);
-        motor_speed = 100; // đi qua line chắn vừa vào vòng while là thoát luôn (đã đọc đc linechắn) sau đó giảm tốc
-    do
-    {
-      Serial.println("111111111111111111111111111");
-     // Serial.println(error);
+  else if(error==30||error==-30){
+    error=memory;
+  }
+else if(error==0.01){
+  myPID.Compute();
+  motor_control();
+  delay(200);
+  motor_speed=100;
+  do{
+  read_sensor();
+  if(error==31){
+    do{
+      dilui();
+      delay(20);
       read_sensor();
-      if(error!=30||error!=-30)   break;  
-      else 
-      { 
-      myPID.Compute(); // Sau khi loại bỏ hết các error đặc biệt mới bỏ vào bộ tính toán PID
-      motor_control();
-      }
-     }
-     while(1);
-   if (error == -30)                 // Rẽ Trái 90*    
-  {
-    do              // Quay sang trái cho tới khi phát hiện ngay giữa line - error == 0
-    {
-      Serial.println("traiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"); 
+    }
+    while(error==31);
+  }
+  else if(error==30){
+    do{
       ReTrai();
       read_sensor();
     }
-    while (error != 0);
+    while(error!=0);
     motor_speed=base_speed;
-    Serial.println("thoattttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt");   
+    break;
   }
-  else if (error == 30)          // Rẽ Phải 90* 
-  {    
-    do                           // Quay sang phải cho tới khi phát hiện ngay giữa line
-    {   
-      Serial.println("phaiiiiiiiiiiiiiiiiiiiiiii"); 
-           RePhai(); 
+  else if(error==-30){
+    do{
+      RePhai();
       read_sensor();
     }
-    while (error != 0);   
-    motor_speed=base_speed; 
-    Serial.println("thoattttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt");   
-  } 
+    while(error!=0);
+    motor_speed=base_speed;
+    break;
   }
-  else 
+  else{
+    myPID.Compute();
+    motor_control();
+  }
+  }
+  while(1);
+}
+  else
   {
+    motor_speed=base_speed;
     myPID.Compute();    // Sau khi loại bỏ hết các error đặc biệt mới bỏ vào bộ tính toán PID
     motor_control();
     // Serial.println(PID_value);    //xem gia tri pid_value                
   }
 }
-
-
 void read_sensor()
 {
   sensor[0] = digitalRead(sensor1);
@@ -182,7 +179,7 @@ void read_sensor()
 void motor_control()
 { 
   left_motor_speed = motor_speed  + PID_value; // Khai bao bien toan cuc
-  right_motor_speed = motor_speed - PID_value - 0.09*motor_speed;  // Khai bao bien toan cuc
+  right_motor_speed = motor_speed - PID_value;  // Khai bao bien toan cuc
 
   // Giới hạn giá trị xuất xung từ 0 - 255
   left_motor_speed = constrain(left_motor_speed, 0, 255);   
